@@ -9,21 +9,27 @@ import (
 
 // go test -v homework_test.go
 
-type CircularQueue struct {
-	values []int
+type AnyIntNumber interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+type AnyIntNumberSlice[T AnyIntNumber] []T
+
+type CircularQueue[T AnyIntNumber] struct {
+	values AnyIntNumberSlice[T]
 	head   int
 	tail   int
 }
 
-func NewCircularQueue(size int) CircularQueue {
-	return CircularQueue{
-		values: make([]int, size),
+func NewCircularQueue[T AnyIntNumber](size T) CircularQueue[T] {
+	return CircularQueue[T]{
+		values: make(AnyIntNumberSlice[T], size),
 		head:   -1,
 		tail:   -1,
 	}
 }
 
-func (q *CircularQueue) Push(value int) bool {
+func (q *CircularQueue[T]) Push(value T) bool {
 	if q.Full() {
 		return false
 	}
@@ -36,7 +42,7 @@ func (q *CircularQueue) Push(value int) bool {
 	return true
 }
 
-func (q *CircularQueue) Pop() bool {
+func (q *CircularQueue[T]) Pop() bool {
 	if q.Empty() {
 		return false
 	}
@@ -51,25 +57,25 @@ func (q *CircularQueue) Pop() bool {
 	return true
 }
 
-func (q *CircularQueue) Front() int {
+func (q *CircularQueue[T]) Front() T {
 	if q.head == -1 {
-		return q.head
+		return T(q.head)
 	}
 	return q.values[q.head]
 }
 
-func (q *CircularQueue) Back() int {
+func (q *CircularQueue[T]) Back() T {
 	if q.tail == -1 {
-		return q.tail
+		return T(q.tail)
 	}
 	return q.values[q.tail]
 }
 
-func (q *CircularQueue) Empty() bool {
+func (q *CircularQueue[T]) Empty() bool {
 	return q.head == -1
 }
 
-func (q *CircularQueue) Full() bool {
+func (q *CircularQueue[T]) Full() bool {
 	return (q.head == q.tail+1) || (q.head == 0 && q.tail == cap(q.values)-1)
 }
 
@@ -89,7 +95,7 @@ func TestCircularQueue(t *testing.T) {
 	assert.True(t, queue.Push(3))
 	assert.False(t, queue.Push(4))
 
-	assert.True(t, reflect.DeepEqual([]int{1, 2, 3}, queue.values))
+	assert.True(t, reflect.DeepEqual([]int{1, 2, 3}, []int(queue.values)))
 
 	assert.False(t, queue.Empty())
 	assert.True(t, queue.Full())
@@ -102,7 +108,7 @@ func TestCircularQueue(t *testing.T) {
 	assert.False(t, queue.Full())
 	assert.True(t, queue.Push(4))
 
-	assert.True(t, reflect.DeepEqual([]int{4, 2, 3}, queue.values))
+	assert.True(t, reflect.DeepEqual([]int{4, 2, 3}, []int(queue.values)))
 
 	assert.Equal(t, 2, queue.Front())
 	assert.Equal(t, 4, queue.Back())
