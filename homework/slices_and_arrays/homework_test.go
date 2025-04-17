@@ -52,11 +52,6 @@ func (q *CircularQueue[T]) Pop() bool {
 	q.head = (q.head + 1) % cap(q.values)
 	q.size--
 
-	if q.size == 0 {
-		q.head = 0
-		q.tail = -1
-	}
-
 	return true
 }
 
